@@ -38,11 +38,32 @@ app.get('/', function (req, res) {
 });
 
 app.get('/logo.png', function(req, res) {
-	res.writeHead(200, {"Content-Type": "image/png"});
 
-	var pathToServe = path.join(__dirname + "/logo.png");
-	fs.createReadStream(pathToServe)
-		.pipe(res);
+	const FILE = path.join(__dirname + "/logo.png");
+
+	res.statusCode = 200;
+
+	var options = {
+		root: __dirname,
+		dotfiles: 'deny',
+		headers: {
+			"Content-Type": "image/png",
+			'x-timestamp': Date.now(),
+			'x-sent': true
+		}
+	};
+
+	res.sendFile(FILE, options, function (err) {
+		if (err) {
+			console.log("An error occurred while attempting to serve " + FILE);
+			console.log(err);
+			res.status(err.status).end();
+		}
+		else {
+			console.log('Sent:' + FILE);
+			res.end();
+		}
+	});
 });
 
 app.get('/images/*', function (req, res) {
@@ -59,6 +80,14 @@ app.get('/css/*', function (req, res) {
 
 app.get('/fonts/*', function (req, res) {
 	allowServeFromDir(req, res, 'font');
+});
+
+app.get('/trafficRisk_files/*', function (req, res) {
+	allowServeFromDir(req, res, 'js');
+});
+
+app.get('/dataPredict/trafficRisk.html', function(req, res) {
+	allowServeFromDir(req, res, 'html');     // HTML is not an expected value here, but the variable is html by default
 });
 
 app.listen(PORT, function () {
